@@ -9,10 +9,10 @@ import {
   BackHandler,
   Alert
 } from 'react-native';
-import { Appbar, Button, Snackbar } from 'react-native-paper';
+import { Button, Snackbar } from 'react-native-paper';
 import { useLocation, useHistory } from 'react-router-dom';
 import firestore from '@react-native-firebase/firestore';
-import { _retrieveUserData } from '../utils';
+import { _retrieveUserData, _storeThePage } from '../utils';
 import moment from 'moment';
 
 const Detail = () => {
@@ -48,10 +48,9 @@ const Detail = () => {
     backAction
   );
 
-  const _goBack = () => backAction();
-
   useEffect(async () => {
     if (!userData) {
+      _storeThePage('detail');
       const userData = await _retrieveUserData();
       setUserData(userData.user);
     }
@@ -158,15 +157,9 @@ const Detail = () => {
       });
   }
 
-  console.log(filteredJobs);
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Appbar.Header>
-          <Appbar.BackAction onPress={_goBack} />
-          <Appbar.Content title="Detail" subtitle="Detail Job" />
-        </Appbar.Header>
         <View style={styles.item}>
           <Text style={styles.client}>{filteredDataClient[0]?.name}</Text>
           <View style={{ flexDirection: 'column', marginBottom: 20 }}>
@@ -237,7 +230,7 @@ const Detail = () => {
             numberOfLines={4}
           />
           <Button
-            disabled={filteredJobs[0]?.jobStat === 1 || filteredJobs[0]?.jobStat === 2 ? false : true }
+            disabled={filteredJobs[0]?.jobStat === 1 || filteredJobs[0]?.jobStat === 2 ? false : true}
             mode="contained"
             color="#6ce68a"
             onPress={() => _updateDataJobsDistance()}

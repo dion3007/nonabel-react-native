@@ -10,14 +10,15 @@ import {
 } from 'react-native';
 import { useHistory } from "react-router-dom";
 import auth from '@react-native-firebase/auth';
-import { _storeUserData, _retrieveUserData } from '../utils';
+import { _storeUserData, _retrieveUserData, _storeThePage } from '../utils';
 
 const Login = () => {
   let history = useHistory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  useEffect(async() => {
+  useEffect(async () => {
+    _storeThePage('login');
     const userData = await _retrieveUserData();
     if (userData) {
       history.push("/bubblegum");
@@ -37,34 +38,34 @@ const Login = () => {
   return (
     <SafeAreaView>
       <ScrollView>
-      <View style={styles.container}>
-        <Image
-          style={styles.logo}
-          source={{
-            uri: 'https://nonable-admin.vercel.app/static/logo.png',
-          }}
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={(e) => setEmail(e)}
-          placeholder="Email"
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={(e) => setPassword(e)}
-          placeholder="Password"
-          secureTextEntry
-        />
-        <View
-          style={styles.buttonClass}
-        >
-          <Button
-            onPress={handleSubmit}
-            title="Login"
+        <View style={styles.container}>
+          <Image
+            style={styles.logo}
+            source={{
+              uri: 'https://nonable-admin.vercel.app/static/logo.png',
+            }}
           />
+          <TextInput
+            style={styles.input}
+            onChangeText={(e) => setEmail(e)}
+            placeholder="Email"
+            keyboardType="email-address"
+          />
+          <TextInput
+            style={styles.input}
+            onChangeText={(e) => setPassword(e)}
+            placeholder="Password"
+            secureTextEntry
+          />
+          <View
+            style={styles.buttonClass}
+          >
+            <Button
+              onPress={handleSubmit}
+              title="Login"
+            />
+          </View>
         </View>
-      </View>
       </ScrollView>
     </SafeAreaView>
   )

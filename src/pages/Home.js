@@ -9,7 +9,6 @@ import {
   BackHandler,
   ScrollView,
 } from 'react-native';
-import { Appbar } from 'react-native-paper';
 import { useHistory } from "react-router-dom";
 import firestore from '@react-native-firebase/firestore';
 import { _retrieveUserData } from '../utils';
@@ -17,7 +16,6 @@ import moment from 'moment';
 
 const Item = ({ item, clients }) => {
   let history = useHistory();
-
   const _updateDataJobs = (value) => {
     firestore()
       .collection('jobs')
@@ -105,7 +103,7 @@ const Item = ({ item, clients }) => {
               />
             </View>
           )}
-          {item.jobStat === 0 && (
+          {item.jobStat === 0 || item.jobStat === 1 && (
             <View style={styles.buttonCard}>
               <Button
                 onPress={() => _updateDataJobs(4)}
@@ -138,18 +136,19 @@ const Item = ({ item, clients }) => {
 };
 
 const Home = () => {
+  let history = useHistory();
   const [jobs, setJobs] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [clients, setClients] = useState([]);
   const [userData, setUserData] = useState();
-
-  const _goBack = () => console.log('Went back');
-  const _handleMore = () => console.log('Shown more');
-
+  const homepage = 'home';
   useEffect(async () => {
-    if (!userData) {
-      const userData = await _retrieveUserData();
+    const userData = await _retrieveUserData();
+    if (userData) {
       setUserData(userData.user);
+    } else {
+      setUserData([]);
+      history.push('/');
     }
     if (jobs.length === 0) {
       firestore()
@@ -184,19 +183,13 @@ const Home = () => {
           setClients(newClients);
         });
     }
-  }, [])
+  }, [userData])
 
   const filteredDataDrivers = drivers.filter((driver) => driver.email === userData.email)
   const filteredDataJobs = jobs.filter((job) => job.driver === filteredDataDrivers[0]?.id)
-  console.log(filteredDataJobs)
 
   return (
     <SafeAreaView>
-      <Appbar.Header>
-        <Appbar.BackAction onPress={_goBack} />
-        <Appbar.Content title="Nonabel Apps" subtitle="Job List" />
-        <Appbar.Action icon="dots-vertical" onPress={_handleMore} />
-      </Appbar.Header>
       <ScrollView contentContainerStyle={{ paddingBottom: 250 }}>
         {filteredDataJobs.length > 0 ? filteredDataJobs.map((item) => {
           return (
