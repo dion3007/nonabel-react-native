@@ -30,10 +30,11 @@ const Item = ({ item, clients }) => {
         driverPaid: item?.driverPaid,
         bookingDate: item?.bookingDate.toString(),
         bookingTime: item?.bookingTime.toString(),
+        incentive: item?.incentive || 0,
         item: item?.item,
         dropOff: item?.dropOff,
-        expensePrice: 0,
-        expenseReason: 'none',
+        expensePrice: item?.expensePrice,
+        expenseReason: item?.expenseReason,
         hour: item?.hour,
         distance: item?.distance,
         date: new Date(),
@@ -145,7 +146,7 @@ const Home = () => {
   useEffect(async () => {
     const userData = await _retrieveUserData();
     if (userData) {
-      setUserData(userData.user);
+      setUserData(userData);
     } else {
       setUserData([]);
       history.push('/');
@@ -185,8 +186,9 @@ const Home = () => {
     }
   }, [userData])
 
-  const filteredDataDrivers = drivers.filter((driver) => driver.email === userData.email)
-  const filteredDataJobs = jobs.filter((job) => job.driver === filteredDataDrivers[0]?.id)
+  console.log(userData)
+
+  const filteredDataJobs = jobs.filter((job) => job.driver === userData?.id)
 
   return (
     <SafeAreaView>
@@ -260,6 +262,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   subtitle: {
+    maxWidth: 250,
     fontSize: 16,
   },
   timesub: {

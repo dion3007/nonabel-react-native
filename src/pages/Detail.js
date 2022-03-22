@@ -52,7 +52,7 @@ const Detail = () => {
     if (!userData) {
       _storeThePage('detail');
       const userData = await _retrieveUserData();
-      setUserData(userData.user);
+      setUserData(userData);
     }
     if (jobs.length === 0) {
       firestore()
@@ -126,10 +126,21 @@ const Detail = () => {
   const [expenseReason, setExpenseReason] = useState("");
 
   const _updateDataJobsDistance = () => {
-    const driverPaids = variable[0]?.empRate * hour + variable[0]?.driverKms * distance;
+    const driverPaids = filteredJobs[0]?.incentive ? filteredJobs[0]?.incentive * Number(hour ? hour : filteredJobs[0]?.hour) + Number(variable[0]?.driverKms * Number(distance ? distance : filteredJobs[0].distance)) + Number(expense ? expense : filteredJobs[0]?.expensePrice)
+      : variable[0]?.empRate * Number(hour ? hour : filteredJobs[0]?.hour) + Number(variable[0]?.driverKms * Number(distance ? distance : filteredJobs[0].distance)) + Number(expense ? expense : filteredJobs[0]?.expensePrice);
     const itemRates = itemRate.filter((items) => items.id === filteredJobs[0]?.item) || 0;
-    const price = itemRates[0]?.rate * hour;
-    const profit = itemRates[0]?.rate * hour - (variable[0]?.empRate * hour + variable[0]?.driverKms * distance);
+    const price = itemRates[0]?.rate * Number(hour ? hour : filteredJobs[0]?.hour)
+      + variable[0]?.nonableKms * Number(distance ? distance : filteredJobs[0].distance) + Number(expense ? expense : filteredJobs[0]?.expensePrice);
+
+    const profit = (itemRates[0]?.rate * Number(hour ? hour : filteredJobs[0]?.hour) +
+      (variable[0]?.nonableKms * Number(distance ? distance : filteredJobs[0].distance))
+      + Number(expense ? expense : filteredJobs[0]?.expensePrice))
+      - (filteredJobs[0]?.incentive ? (filteredJobs[0]?.incentive * Number(hour ? hour : filteredJobs[0]?.hour))
+        + ((variable[0]?.driverKms * Number(distance ? distance : filteredJobs[0].distance))
+          + Number(expense ? expense : filteredJobs[0]?.expensePrice))
+        : (variable[0]?.empRate * Number(hour ? hour : filteredJobs[0]?.hour))
+        + (variable[0]?.driverKms * Number(distance ? distance : filteredJobs[0].distance)
+          + Number(expense ? expense : filteredJobs[0]?.expensePrice)));
     onToggleSnackBar();
     firestore()
       .collection('jobs')
@@ -146,6 +157,7 @@ const Detail = () => {
         driverPaid: driverPaids,
         bookingDate: filteredJobs[0]?.bookingDate.toString(),
         dropOff: filteredJobs[0]?.dropOff,
+        incentive: filteredJobs[0]?.incentive || 0,
         expensePrice: expense ? expense : filteredJobs[0]?.expensePrice,
         expenseReason: expenseReason ? expenseReason : filteredJobs[0]?.expenseReason,
         hour: hour ? hour : filteredJobs[0]?.hour,
@@ -155,6 +167,9 @@ const Detail = () => {
         paid: false,
         jobStat: 2
       });
+    history.push({
+      pathname: '/bubblegum'
+    })
   }
 
   return (
@@ -301,6 +316,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   subtitle: {
+    maxWidth: 250,
     fontSize: 16,
   },
   buttonCard: {

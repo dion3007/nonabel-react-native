@@ -9,13 +9,14 @@ import {
   ScrollView
 } from 'react-native';
 import { useHistory } from "react-router-dom";
-import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 import { _storeUserData, _retrieveUserData, _storeThePage } from '../utils';
 
 const Login = () => {
   let history = useHistory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [users, setUsers] = useState([]);
 
   useEffect(async () => {
     _storeThePage('login');
@@ -23,17 +24,30 @@ const Login = () => {
     if (userData) {
       history.push("/bubblegum");
     }
-  })
+    if (users) {
+      firestore()
+        .collection('drivers')
+        .onSnapshot((doc) => {
+          const newDrivers = doc.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setUsers(newDrivers)
+        });
+    }
+  }, [])
 
   const handleSubmit = () => {
-    auth()
-      .signInWithEmailAndPassword(email, password)
-      .then((response) => {
-        console.log('User account created & signed in!', response);
-        _storeUserData(response);
-        history.push("/bubblegum");
-      })
-      .catch((error) => console.log('User account created & signed in!', error))
+    const filteredUsers = users?.filter(
+      (user) =>
+        email === user.email &&
+        password === user.password &&
+        user.status === 'active'
+    );
+    if (filteredUsers) {
+      _storeUserData(filteredUsers[0]);
+      history.push("/bubblegum");
+    }
   }
   return (
     <SafeAreaView>
